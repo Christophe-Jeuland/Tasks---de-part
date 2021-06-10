@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension AnyTransition {
-
+    
 }
 
 struct TaskListView: View {
@@ -26,27 +26,28 @@ struct TaskListView: View {
                 VStack {
                     Image(systemName: "plus.circle")
                         .font(.title3)
-                        .transition(.scale(scale: 2))
                         .rotationEffect(.degrees(addNewTask ? 45 : 0))
                         .scaleEffect(addNewTask ? 2 : 1)
-                    if addNewTask {
-                        HStack {
-                            TextField("Nouvelle tâche", text: $newTaskName)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            Button(action: createNewTask, label: {
-                                Image(systemName: "plus")
-                            }).disabled(newTaskName.count == 0)
-                        }.padding()
-                    }
                 }
             })
             
+            if addNewTask {
+                HStack {
+                    TextField("Nouvelle tâche", text: $newTaskName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    Button(action: createNewTask, label: {
+                        Image(systemName: "plus")
+                    }).disabled(newTaskName.count == 0)
+                }.padding()
+            }
+            
             VStack(alignment: HorizontalAlignment.leading ) {
-                ForEach(taskManager.taskList) { task in
+                ForEach(taskManager.taskList.sorted(by: { $0.name < $1.name })) { task in
                     TaskCell(task: task)
                         .onTapGesture {
                             userTappedTask(task)
                         }
+                        .transition(.slide)
                 }
             }
             Spacer()
@@ -55,8 +56,10 @@ struct TaskListView: View {
     
     func createNewTask() {
         if newTaskName.count > 0 {
-            taskManager.addTask(withName: newTaskName)
-            newTaskName = ""
+            withAnimation {
+                taskManager.addTask(withName: newTaskName)
+                newTaskName = ""
+            }
         }
     }
     
